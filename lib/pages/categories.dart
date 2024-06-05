@@ -94,6 +94,7 @@ class CategoriesPageState extends State<CategoriesPage> {
                   wrapInCard: false,
                   border: TableBorder.all(),
                   columnSpacing: 10,
+                  // showCheckboxColumn: true,
                   headingTextStyle: const TextStyle(
                       color: Colors.white, fontWeight: FontWeight.w700),
                   headingRowColor:
@@ -126,25 +127,27 @@ class MyDataTableSource extends DataTableSource {
 
   @override
   DataRow? getRow(int index) {
-    return DataRow2(cells: [
-      DataCell(Text('${categoriesEx?[index].id}')),
-      DataCell(Text('${categoriesEx?[index].name}')),
-      DataCell(Text('${categoriesEx?[index].description}')),
-      DataCell(Row(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: [
-          IconButton(onPressed: () async {}, icon: const Icon(Icons.edit)),
-          IconButton(
-              onPressed: () async {
-                await onDeleteRow(categoriesEx?[index].id ?? 0);
-              },
-              icon: const Icon(
-                Icons.delete,
-                color: Colors.red,
-              )),
-        ],
-      )),
-    ]);
+    return DataRow2(
+        // onSelectChanged: (value) {},
+        cells: [
+          DataCell(Text('${categoriesEx?[index].id}')),
+          DataCell(Text('${categoriesEx?[index].name}')),
+          DataCell(Text('${categoriesEx?[index].description}')),
+          DataCell(Row(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              IconButton(onPressed: () async {}, icon: const Icon(Icons.edit)),
+              IconButton(
+                  onPressed: () async {
+                    await onDeleteRow(categoriesEx?[index].id ?? 0);
+                  },
+                  icon: const Icon(
+                    Icons.delete,
+                    color: Colors.red,
+                  )),
+            ],
+          )),
+        ]);
   }
 
   Future<void> onDeleteRow(int id) async {
