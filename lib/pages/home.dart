@@ -1,4 +1,5 @@
 import 'package:easy_pos/helpers/sql_helper.dart';
+import 'package:easy_pos/pages/categories.dart';
 import 'package:easy_pos/widgets/grid_view_item.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
@@ -38,7 +39,7 @@ class _HomePageState extends State<HomePage> {
             children: [
               Expanded(
                 child: Container(
-                  height: MediaQuery.of(context).size.height / 3 +
+                  height: MediaQuery.of(context).size.height / 2.8 +
                       (kIsWeb ? 40 : 0),
                   color: Theme.of(context).primaryColor,
                   child: Padding(
@@ -99,26 +100,34 @@ class _HomePageState extends State<HomePage> {
                   color: Colors.orange,
                   iconData: Icons.calculate,
                   label: 'All Sales',
+                  onTap: () {},
                 ),
                 GridViewItem(
                   color: Colors.pink,
                   iconData: Icons.inventory_2,
                   label: 'Products',
+                  onTap: () {},
                 ),
                 GridViewItem(
                   color: Colors.lightBlue,
                   iconData: Icons.groups,
                   label: 'Clients',
+                  onTap: () {},
                 ),
                 GridViewItem(
                   color: Colors.green,
                   iconData: Icons.point_of_sale,
                   label: 'New Sale',
+                  onTap: () {},
                 ),
                 GridViewItem(
                   color: Colors.yellow,
                   iconData: Icons.category,
                   label: 'Categories',
+                  onTap: () {
+                    Navigator.push(context,
+                        MaterialPageRoute(builder: (_) => CategoriesPage()));
+                  },
                 ),
               ],
             ),
@@ -127,6 +136,7 @@ class _HomePageState extends State<HomePage> {
       ),
     );
   }
+
 //resuble componant
   Widget headerItem(String label, String value) {
     return Padding(
