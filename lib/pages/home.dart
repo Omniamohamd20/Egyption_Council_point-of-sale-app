@@ -1,5 +1,6 @@
 import 'package:easy_pos/helpers/sql_helper.dart';
 import 'package:easy_pos/pages/categories.dart';
+import 'package:easy_pos/pages/products.dart';
 import 'package:easy_pos/widgets/grid_view_item.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
@@ -50,21 +51,22 @@ class _HomePageState extends State<HomePage> {
                       children: [
                         Row(
                           children: [
-                            Text(
+                            const Text(
                               'Easy Pos',
                               style: TextStyle(
-                                color: const Color.fromRGBO(255, 255, 255, 1),
+                                color: Color.fromRGBO(255, 255, 255, 1),
                                 fontWeight: FontWeight.w800,
                                 fontSize: 24,
                               ),
                             ),
                             //checking the database is working or not
                             Padding(
-                              padding: EdgeInsets.symmetric(horizontal: 10),
+                              padding:
+                                  const EdgeInsets.symmetric(horizontal: 10),
                               child: isLoading
                                   ? Transform.scale(
                                       scale: .5,
-                                      child: CircularProgressIndicator(
+                                      child: const CircularProgressIndicator(
                                         color: Colors.white,
                                       ),
                                     )
@@ -106,7 +108,12 @@ class _HomePageState extends State<HomePage> {
                   color: Colors.pink,
                   iconData: Icons.inventory_2,
                   label: 'Products',
-                  onTap: () {},
+                  onTap: () {
+                    Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                            builder: (_) => const ProductsPage()));
+                  },
                 ),
                 GridViewItem(
                   color: Colors.lightBlue,
@@ -125,8 +132,10 @@ class _HomePageState extends State<HomePage> {
                   iconData: Icons.category,
                   label: 'Categories',
                   onTap: () {
-                    Navigator.push(context,
-                        MaterialPageRoute(builder: (_) => CategoriesPage()));
+                    Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                            builder: (_) => const CategoriesPage()));
                   },
                 ),
               ],

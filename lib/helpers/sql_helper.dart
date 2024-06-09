@@ -24,14 +24,16 @@ class SqlHelper {
       print('Error in creating database: $e');
     }
   }
+
 //future =>await
   Future<bool> createTables() async {
     try {
       var batch = db!.batch();
+      batch.execute("""PRAGMA foreign_keys = ON""");
       //creating categories table
       batch.execute("""
         Create table if not exists categories(
-          id integer primary key,
+          id integer primary key, 
           name text not null,
           description text not null
           ) 
@@ -45,9 +47,11 @@ class SqlHelper {
           description text not null,
           price double not null,
           stock integer not null,
-          isAvaliable boolean not null,
-          image blob,
-          categoryId integer not null
+          isAvailable boolean not null,
+          image text,
+          categoryId integer not null,
+          foreign key(categoryId) references categories(id)
+          on delete restrict
           ) 
           """);
 
