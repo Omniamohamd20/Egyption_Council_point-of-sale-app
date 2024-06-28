@@ -25,11 +25,17 @@ class SqlHelper {
     }
   }
 
+  Future<void> registerForeignKeys() async {
+    await db!.rawQuery("PRAGMA foreign_keys = ON");
+    var result = await db!.rawQuery("PRAGMA foreign_keys");
+    print('foreign keys result: $result');
+  }
+
 //future =>await
   Future<bool> createTables() async {
+    await registerForeignKeys();
     try {
       var batch = db!.batch();
-      batch.execute("""PRAGMA foreign_keys = ON""");
       //creating categories table
       batch.execute("""
         Create table if not exists categories(
@@ -38,6 +44,18 @@ class SqlHelper {
           description text not null
           ) 
           """);
+      // creating exchange table
+      batch.execute("""
+        Create table if not exists exchange(
+          id integer primary key,
+          fromCurrencyName text not null,
+          fromCurrency real,
+          toCurrencyName text not null,
+          toCurrency real ,
+          rate real
+          ) 
+          """);
+    
 
       //creating products table
       batch.execute("""
@@ -65,13 +83,47 @@ class SqlHelper {
           address text
           ) 
           """);
+// creating table  orders
+      batch.execute("""
+        Create table if not exists orders(
+          id integer primary key,
+          label text ,
+          totalPrice real,
+          discount real ,
+          clientId integer not null ,
+          foreign key(clientId) references clients(id)
+          on delete restrict 
+
+          ) 
+          """);
+// creating table orderProductItems
+      batch.execute("""
+Create table if not exists orderProductItems (
+orderId integer ,
+productCount integer ,
+productId integer ,
+foreign key(productId) references products(id)
+    on delete restrict
+)
+""");
 
       var result = await batch.commit();
-      print('resuts $result');
+      print('results $result');
       return true;
     } catch (e) {
       print('Error in creating table: $e');
       return false;
     }
   }
+
+  query(String tableName,
+      {required String where,
+      required List<int> whereArgs,
+      required int limit}) {}
+
+  getSingleRow(String s, int i) {}
+
+  execute(String s, Map<String, dynamic> map) {}
+
+  insert(String s, Map<String, Object> map) {}
 }

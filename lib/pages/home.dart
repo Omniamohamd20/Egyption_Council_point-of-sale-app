@@ -1,6 +1,11 @@
 import 'package:easy_pos/helpers/sql_helper.dart';
+import 'package:easy_pos/models/exchange.dart';
+import 'package:easy_pos/models/order.dart';
+import 'package:easy_pos/pages/all_sales.dart';
 import 'package:easy_pos/pages/categories.dart';
+import 'package:easy_pos/pages/clients.dart';
 import 'package:easy_pos/pages/products.dart';
+import 'package:easy_pos/pages/sale_ops.dart';
 import 'package:easy_pos/widgets/grid_view_item.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
@@ -14,12 +19,61 @@ class HomePage extends StatefulWidget {
 }
 
 class _HomePageState extends State<HomePage> {
+  List<ExchangeData>? exchange;
+  List<Order>? orders;
   bool isLoading = true;
   bool isTableIntilized = false;
   @override
+  void getExchange() async {
+    try {
+      var sqlHelper = GetIt.I.get<SqlHelper>();
+      var data = await sqlHelper.db!.query('exchange');
+      if (data.isNotEmpty) {
+        exchange = [];
+        for (var item in data) {
+          exchange!.add(ExchangeData.fromJson(item));
+        }
+      } else {
+        exchange = [];
+      }
+    } catch (e) {
+      print('Error In get data $e');
+      exchange = [];
+    }
+
+    setState(() {});
+  }
+
+  void getOrders() async {
+    try {
+      var sqlHelper = GetIt.I.get<SqlHelper>();
+      var data = await sqlHelper.db!.rawQuery("""
+      select O.* ,C.name as clientName,C.phone as clientPhone,C.address as clientAddress 
+      from orders O
+      inner join clients C
+      where O.clientId = C.id
+      """);
+
+      if (data.isNotEmpty) {
+        orders = [];
+        for (var item in data) {
+          orders!.add(Order.fromJson(item));
+        }
+      } else {
+        orders = [];
+      }
+    } catch (e) {
+      print('Error In get data $e');
+      orders = [];
+    }
+    setState(() {});
+  }
+
   void initState() {
     intilizeTables();
     super.initState();
+    getExchange();
+    getOrders();
   }
 
   void intilizeTables() async {
@@ -38,6 +92,11 @@ class _HomePageState extends State<HomePage> {
         children: [
           Row(
             children: [
+              // FloatingActionButton(onPressed: () async {
+              //   var sqlHelper = GetIt.I.get<SqlHelper>();
+              // var data = sqlHelper.db!.execute("""ALTER TABLE orders ADD COLUMN createdAt TEXT""");
+
+              // }),
               Expanded(
                 child: Container(
                   height: MediaQuery.of(context).size.height / 2.8 +
@@ -79,8 +138,9 @@ class _HomePageState extends State<HomePage> {
                             )
                           ],
                         ),
-                        headerItem('Exchange Rate', '1USD = 50 EGP'),
-                        headerItem('Today\'s Sales', '1000 EGP'),
+                        headerItem('Exchange Rate',
+                            '${exchange?[0].fromCurrency} ${exchange?[0].fromCurrencyName} = ${exchange?[0].toCurrency} ${exchange?[0].toCurrencyName}'),
+                        headerItem('Today\'s Sales', '$salesOfTheDay EGP'),
                       ],
                     ),
                   ),
@@ -102,7 +162,10 @@ class _HomePageState extends State<HomePage> {
                   color: Colors.orange,
                   iconData: Icons.calculate,
                   label: 'All Sales',
-                  onTap: () {},
+                  onTap: () {
+                    Navigator.push(context,
+                        MaterialPageRoute(builder: (_) => const AllSales()));
+                  },
                 ),
                 GridViewItem(
                   color: Colors.pink,
@@ -119,13 +182,19 @@ class _HomePageState extends State<HomePage> {
                   color: Colors.lightBlue,
                   iconData: Icons.groups,
                   label: 'Clients',
-                  onTap: () {},
+                  onTap: () {
+                    Navigator.push(context,
+                        MaterialPageRoute(builder: (_) => const ClientsPage()));
+                  },
                 ),
                 GridViewItem(
                   color: Colors.green,
                   iconData: Icons.point_of_sale,
                   label: 'New Sale',
-                  onTap: () {},
+                  onTap: () {
+                    Navigator.push(context,
+                        MaterialPageRoute(builder: (_) => const SaleOpsPage()));
+                  },
                 ),
                 GridViewItem(
                   color: Colors.yellow,
@@ -182,5 +251,15 @@ class _HomePageState extends State<HomePage> {
         ),
       ),
     );
+  }
+
+  double get salesOfTheDay {
+    double salesOfDay = 0;
+    for (var item in orders!)
+      if (item.label ==
+          '#OR${DateTime.now().day}-${DateTime.now().month}-${DateTime.now().year}')
+        salesOfDay = salesOfDay + (item.totalPrice ?? 0);
+    getOrders();
+    return salesOfDay;
   }
 }

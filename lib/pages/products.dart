@@ -3,6 +3,7 @@ import 'package:easy_pos/helpers/sql_helper.dart';
 import 'package:easy_pos/models/product.dart';
 import 'package:easy_pos/pages/products_ops.dart';
 import 'package:easy_pos/widgets/app_table.dart';
+import 'package:easy_pos/widgets/bottom_sheet.dart';
 import 'package:flutter/material.dart';
 import 'package:get_it/get_it.dart';
 
@@ -15,6 +16,8 @@ class ProductsPage extends StatefulWidget {
 
 class _ProductsPageState extends State<ProductsPage> {
   List<Product>? products;
+  bool _showWidget = false;
+  int pressedCount = 0;
   @override
   void initState() {
     getProducts();
@@ -66,33 +69,110 @@ class _ProductsPageState extends State<ProductsPage> {
         padding: const EdgeInsets.all(20.0),
         child: Column(
           children: [
-            TextField(
-              onChanged: (value) async {
-                var sqlHelper = GetIt.I.get<SqlHelper>();
-                var result = await sqlHelper.db!.rawQuery("""
-           SELECT * FROM products
-        WHERE name LIKE '%$value%' OR description LIKE '%$value% OR price LIKE '%$value%';
+         
+                   // search,filter,sort row
+            Row(mainAxisAlignment: MainAxisAlignment.start, children: [
+              Container(
+                width: 295,
+                height: 50,
+                child: TextField(
+                  onChanged: (value) async {
+                    var sqlHelper = GetIt.I.get<SqlHelper>();
+                    var result = await sqlHelper.db!.rawQuery("""
+        SELECT * FROM Products
+        WHERE name LIKE '%$value%' OR description LIKE '%$value%' OR price LIKE '%$value%';
           """);
-
-                print('values:${result}');
-              },
-              decoration: const InputDecoration(
-                prefixIcon: Icon(Icons.search),
-                enabledBorder: OutlineInputBorder(
-                  borderRadius: BorderRadius.all(Radius.circular(5)),
+                    if (result.isNotEmpty) {
+                      products = [];
+                      for (var item in result) {
+                        products!.add(Product.fromJson(item));
+                      }
+                    } else {
+                      products = [];
+                    }
+                    setState(() {});
+                    // print('values:${result}');
+                  },
+                  decoration: const InputDecoration(
+                      enabledBorder: OutlineInputBorder(
+                        borderRadius: BorderRadius.only(
+                          topLeft: Radius.circular(5.0),
+                          bottomLeft: Radius.circular(5.0),
+                        ),
+                      ),
+                      border: OutlineInputBorder(
+                        borderRadius: BorderRadius.all(Radius.circular(1)),
+                      ),
+                      hintText: 'search'),
                 ),
-                border: OutlineInputBorder(
-                  borderRadius: BorderRadius.all(Radius.circular(5)),
-                ),
-                labelText: 'Search',
               ),
+              Container(
+                padding: const EdgeInsets.all(2),
+                width: 40,
+                height: 50,
+
+                decoration: BoxDecoration(
+                  borderRadius: BorderRadius.only(
+                    topRight: Radius.circular(5.0),
+                    bottomRight: Radius.circular(5.0),
+                  ),
+                  color: Theme.of(context).primaryColor,
+                  border: Border(
+                    top: BorderSide(color: Colors.black, width: 1.0),
+                    right: BorderSide(color: Colors.black, width: 1.0),
+                    bottom: BorderSide(color: Colors.black, width: 1.0),
+                  ),
+                ),
+
+                // color: Theme.of(context).primaryColor,
+                child: IconButton(
+                    alignment: Alignment.center,
+                    iconSize: 18,
+                    onPressed: () {
+                      setState(() {
+                        pressedCount % 2 == 0
+                            ? (getSortedData('price', 'ASC'), pressedCount++)
+                            : (getSortedData('price', 'DESC'), pressedCount++);
+                      });
+                    },
+                    icon: Icon(
+                      Icons.sort,
+                      color: Colors.white,
+                    )),
+              ),
+              Container(
+
+                  // padding: const EdgeInsets.all(2),
+                  width: 35,
+                  height: 50,
+                  child: IconButton(
+                      iconSize: 18,
+                      onPressed: () {
+                        setState(() {
+                          _showWidget = !_showWidget;
+                        });
+                      },
+                      icon: Icon(
+                        _showWidget
+                            ? Icons.filter_alt_off_rounded
+                            : Icons.filter_alt,
+                        color: Theme.of(context).primaryColor,
+                        size: 25,
+                      )))
+            ]),
+            SizedBox(
+              height: 10,
             ),
+            if (_showWidget)
+              BottomSheetModal(
+                text: 'j',
+              ),
             const SizedBox(
               height: 10,
             ),
             Expanded(
                 child: AppTable(
-                    minWidth: 1200,
+                    minWidth: 1400,
                     columns: const [
                       DataColumn(label: Text('Id')),
                       DataColumn(label: Text('Name')),
@@ -127,6 +207,29 @@ class _ProductsPageState extends State<ProductsPage> {
         ),
       ),
     );
+  }
+  Future<void> getSortedData(String columnName, String sortType) async {
+    var sqlHelper = GetIt.I.get<SqlHelper>();
+    var data;
+    if (sortType == "ASC") {
+      data = await sqlHelper.db!.rawQuery("""
+SELECT * FROM Products ORDER BY $columnName ASC;
+""");
+    }
+    if (sortType == "DESC") {
+      data = await sqlHelper.db!.rawQuery("""
+SELECT * FROM Products ORDER BY $columnName DESC;
+""");
+    }
+    if (data.isNotEmpty) {
+      products = [];
+      for (var item in data) {
+          products!.add(Product.fromJson(item));
+      }
+    } else {
+         products = [];
+    }
+    setState(() {});
   }
 
   Future<void> onDeleteRow(int id) async {
@@ -201,7 +304,7 @@ class ProductsSource extends DataTableSource {
       DataCell(Text('${productsEx?[index].categoryName}')),
       DataCell(Text('${productsEx?[index].categoryDesc}')),
       DataCell(Row(
-        // mainAxisAlignment: MainAxisAlignment.center,
+        mainAxisAlignment: MainAxisAlignment.center,
         children: [
           IconButton(
               onPressed: () {

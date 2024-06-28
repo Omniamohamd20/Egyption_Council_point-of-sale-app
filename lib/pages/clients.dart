@@ -1,72 +1,71 @@
+import 'dart:ffi';
+
 import 'package:data_table_2/data_table_2.dart';
 import 'package:easy_pos/helpers/sql_helper.dart';
-import 'package:easy_pos/models/category_data.dart';
-import 'package:easy_pos/pages/category_ops.dart';
+import 'package:easy_pos/models/client.dart';
+import 'package:easy_pos/pages/clients_ops.dart';
 import 'package:easy_pos/widgets/app_table.dart';
 import 'package:easy_pos/widgets/bottom_sheet.dart';
 import 'package:flutter/material.dart';
 import 'package:get_it/get_it.dart';
 
-class CategoriesPage extends StatefulWidget {
-  const CategoriesPage({super.key});
+class ClientsPage extends StatefulWidget {
+  const ClientsPage({super.key});
 
   @override
-  State<CategoriesPage> createState() => _CategoriesPageState();
+  State<ClientsPage> createState() => _ClientsPageState();
 }
 
-class _CategoriesPageState extends State<CategoriesPage> {
-  List<CategoryData>? categories;
-    bool _showWidget = false;
+class _ClientsPageState extends State<ClientsPage> {
+  List<ClientData>? clients;
+  bool _showWidget = false;
   int pressedCount = 0;
   @override
   void initState() {
-    getCategories();
+    getClients();
     super.initState();
   }
 
-  void getCategories() async {
+  void getClients() async {
     try {
       var sqlHelper = GetIt.I.get<SqlHelper>();
-      var data = await sqlHelper.db!.query('categories');
-
+      var data = await sqlHelper.db!.query('clients');
       if (data.isNotEmpty) {
-        categories = [];
+        clients = [];
         for (var item in data) {
-          categories!.add(CategoryData.fromJson(item));
+          clients!.add(ClientData.fromJson(item));
         }
       } else {
-        categories = [];
+        clients = [];
       }
     } catch (e) {
       print('Error In get data $e');
-      categories = [];
+      clients = [];
     }
     setState(() {});
   }
 
-  @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Categories'),
+        title: const Text('Clients'),
         actions: [
           IconButton(
               onPressed: () async {
                 var result = await Navigator.push(context,
-                    MaterialPageRoute(builder: (ctx) => CategoriesOpsPage()));
+                    MaterialPageRoute(builder: (ctx) => ClientsOpsPage()));
                 if (result ?? false) {
-                  getCategories();
+                  getClients();
                 }
               },
               icon: const Icon(Icons.add))
         ],
       ),
       body: Padding(
-        padding: const EdgeInsets.all(20.0),
+        padding: const EdgeInsets.fromLTRB(20.0, 20.0, 20.0, 20.0),
         child: Column(
           children: [
-            
-                        // search,filter,sort row
+            // search,filter,sort row
             Row(mainAxisAlignment: MainAxisAlignment.start, children: [
               Container(
                 width: 295,
@@ -74,20 +73,21 @@ class _CategoriesPageState extends State<CategoriesPage> {
                 child: TextField(
                   onChanged: (value) async {
                     var sqlHelper = GetIt.I.get<SqlHelper>();
-                     var result = await sqlHelper.db!.rawQuery("""
-        SELECT * FROM Categories
-        WHERE name LIKE '%$value%' OR description LIKE '%$value%';
+                    var result = await sqlHelper.db!.rawQuery("""
+        SELECT * FROM Clients
+        WHERE name LIKE '%$value%' OR phone LIKE '%$value%' OR email LIKE '%$value%' OR address LIKE '%$value%';
           """);
                     if (result.isNotEmpty) {
-                      categories = [];
+                      clients = [];
                       for (var item in result) {
-                        categories!.add(CategoryData.fromJson(item));
+                        clients!.add(ClientData.fromJson(item));
                       }
                     } else {
-                      categories = [];
+                      clients = [];
                     }
                     setState(() {});
                     // print('values:${result}');
+                 
                   },
                   decoration: const InputDecoration(
                       enabledBorder: OutlineInputBorder(
@@ -106,23 +106,26 @@ class _CategoriesPageState extends State<CategoriesPage> {
                 padding: const EdgeInsets.all(2),
                 width: 40,
                 height: 50,
-
-                decoration: BoxDecoration(
-                  borderRadius: BorderRadius.only(
+                
+                              decoration: BoxDecoration(
+                                 borderRadius: BorderRadius.only(
+            
                     topRight: Radius.circular(5.0),
                     bottomRight: Radius.circular(5.0),
+                  
                   ),
-                  color: Theme.of(context).primaryColor,
-                  border: Border(
-                    top: BorderSide(color: Colors.black, width: 1.0),
-                    right: BorderSide(color: Colors.black, width: 1.0),
-                    bottom: BorderSide(color: Colors.black, width: 1.0),
-                  ),
+                                color: Theme.of(context).primaryColor,
+                  border:   Border(  top: BorderSide(color: Colors.black, width: 1.0),
+                  right: BorderSide(color: Colors.black, width: 1.0),
+                  bottom: BorderSide(color: Colors.black, width: 1.0),
+   
+                ),
+                
                 ),
 
                 // color: Theme.of(context).primaryColor,
                 child: IconButton(
-                    alignment: Alignment.center,
+                  alignment: Alignment.center,
                     iconSize: 18,
                     onPressed: () {
                       setState(() {
@@ -131,13 +134,10 @@ class _CategoriesPageState extends State<CategoriesPage> {
                             : (getSortedData('name', 'DESC'), pressedCount++);
                       });
                     },
-                    icon: Icon(
-                      Icons.sort_by_alpha_rounded,
-                      color: Colors.white,
-                    )),
+                    icon: Icon(Icons.sort_by_alpha_rounded,color: Colors.white,)),
               ),
               Container(
-
+                
                   // padding: const EdgeInsets.all(2),
                   width: 35,
                   height: 50,
@@ -149,11 +149,12 @@ class _CategoriesPageState extends State<CategoriesPage> {
                         });
                       },
                       icon: Icon(
+                        
                         _showWidget
-                            ? Icons.filter_alt_off_rounded
+                            ?  Icons.filter_alt_off_rounded
                             : Icons.filter_alt,
-                        color: Theme.of(context).primaryColor,
-                        size: 25,
+                            color:  Theme.of(context).primaryColor,size: 25,
+                           
                       )))
             ]),
             SizedBox(
@@ -162,64 +163,69 @@ class _CategoriesPageState extends State<CategoriesPage> {
             if (_showWidget)
               BottomSheetModal(
                 text: 'j',
+               
               ),
             const SizedBox(
               height: 10,
             ),
             Expanded(
-                child: AppTable(
-                    columns: const [
-                  DataColumn(label: Text('Id')),
-                  DataColumn(label: Text('Name')),
-                  DataColumn(label: Text('Description')),
-                  DataColumn(label: Center(child: Text('Actions'))),
-                ],
-                    source: CategoriesTableSource(
-                      categoriesEx: categories,
-                      onUpdate: (categoryData) async {
-                        var result = await Navigator.push(
-                            context,
-                            MaterialPageRoute(
-                                builder: (ctx) => CategoriesOpsPage(
-                                      categoryData: categoryData,
-                                    )));
-                        if (result ?? false) {
-                          getCategories();
-                        }
-                      },
-                      onDelete: (categoryData) {
-                        onDeleteRow(categoryData.id!);
-                      },
-                    ))),
+              child: AppTable(
+                  minWidth: 1200,
+                  columns: const [
+                    DataColumn(label: Text('Id')),
+                    DataColumn(label: Text('Name')),
+                    DataColumn(label: Text('Email')),
+                    DataColumn(label: Text('Phone')),
+                    DataColumn(label: Text('Address')),
+                    DataColumn(label: Center(child: Text('Actions'))),
+                  ],
+                  source: ClientsSource(
+                    clientsEx: clients,
+                    onUpdate: (clientData) async {
+                      var result = await Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                              builder: (ctx) => ClientsOpsPage(
+                                    clientData: clientData,
+                                  )));
+                      if (result ?? false) {
+                        getClients();
+                      }
+                    },
+                    onDelete: (clientData) {
+                      onDeleteRow(clientData.id!);
+                    },
+                  )),
+            ),
           ],
         ),
       ),
     );
   }
-    Future<void> getSortedData(String columnName, String sortType) async {
+
+  Future<void> getSortedData(String columnName, String sortType) async {
     var sqlHelper = GetIt.I.get<SqlHelper>();
     var data;
     if (sortType == "ASC") {
       data = await sqlHelper.db!.rawQuery("""
-SELECT * FROM Categories ORDER BY $columnName ASC;
+SELECT * FROM Clients ORDER BY $columnName ASC;
 """);
     }
     if (sortType == "DESC") {
       data = await sqlHelper.db!.rawQuery("""
-SELECT * FROM Categories ORDER BY $columnName DESC;
+SELECT * FROM Clients ORDER BY $columnName DESC;
 """);
     }
     if (data.isNotEmpty) {
-      categories = [];
+      clients = [];
       for (var item in data) {
-       categories!.add(CategoryData.fromJson(item));
+        clients!.add(ClientData.fromJson(item));
       }
     } else {
-      categories = [];
+      clients = [];
     }
     setState(() {});
   }
-
 
   Future<void> onDeleteRow(int id) async {
     try {
@@ -227,9 +233,9 @@ SELECT * FROM Categories ORDER BY $columnName DESC;
           context: context,
           builder: (context) {
             return AlertDialog(
-              title: const Text('Delete Category'),
+              title: const Text('Delete client'),
               content:
-                  const Text('Are you sure you want to delete this category?'),
+                  const Text('Are you sure you want to delete this client?'),
               actions: [
                 TextButton(
                   onPressed: () {
@@ -250,12 +256,12 @@ SELECT * FROM Categories ORDER BY $columnName DESC;
       if (dialogResult ?? false) {
         var sqlHelper = GetIt.I.get<SqlHelper>();
         var result = await sqlHelper.db!.delete(
-          'categories',
+          'clients',
           where: 'id =?',
           whereArgs: [id],
         );
         if (result > 0) {
-          getCategories();
+          getClients();
         }
       }
     } catch (e) {
@@ -264,33 +270,35 @@ SELECT * FROM Categories ORDER BY $columnName DESC;
   }
 }
 
-class CategoriesTableSource extends DataTableSource {
-  List<CategoryData>? categoriesEx;
+class ClientsSource extends DataTableSource {
+  List<ClientData>? clientsEx;
 
-  void Function(CategoryData) onUpdate;
-  void Function(CategoryData) onDelete;
-  CategoriesTableSource(
-      {required this.categoriesEx,
+  void Function(ClientData) onUpdate;
+  void Function(ClientData) onDelete;
+  ClientsSource(
+      {required this.clientsEx,
       required this.onUpdate,
       required this.onDelete});
 
   @override
   DataRow? getRow(int index) {
     return DataRow2(cells: [
-      DataCell(Text('${categoriesEx?[index].id}')),
-      DataCell(Text('${categoriesEx?[index].name}')),
-      DataCell(Text('${categoriesEx?[index].description}')),
+      DataCell(Text('${clientsEx?[index].id}')),
+      DataCell(Text('${clientsEx?[index].name}')),
+      DataCell(Text('${clientsEx?[index].email}')),
+      DataCell(Text('${clientsEx?[index].phone}')),
+      DataCell(Text('${clientsEx?[index].address}')),
       DataCell(Row(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
           IconButton(
               onPressed: () {
-                onUpdate(categoriesEx![index]);
+                onUpdate(clientsEx![index]);
               },
               icon: const Icon(Icons.edit)),
           IconButton(
               onPressed: () {
-                onDelete(categoriesEx![index]);
+                onDelete(clientsEx![index]);
               },
               icon: const Icon(
                 Icons.delete,
@@ -305,7 +313,7 @@ class CategoriesTableSource extends DataTableSource {
   bool get isRowCountApproximate => false;
 
   @override
-  int get rowCount => categoriesEx?.length ?? 0;
+  int get rowCount => clientsEx?.length ?? 0;
 
   @override
   int get selectedRowCount => 0;
