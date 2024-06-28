@@ -19,6 +19,9 @@ class _ClientsPageState extends State<ClientsPage> {
   List<ClientData>? clients;
   bool _showWidget = false;
   int pressedCount = 0;
+  bool placeFilterPressed = false;
+  bool discountFilterPressed = false;
+
   @override
   void initState() {
     getClients();
@@ -72,9 +75,9 @@ class _ClientsPageState extends State<ClientsPage> {
                 child: TextField(
                   onChanged: (value) async {
                     var sqlHelper = GetIt.I.get<SqlHelper>();
-                    var result = await sqlHelper.db!.rawQuery("""
+                    if(placeFilterPressed){  var result = await sqlHelper.db!.rawQuery("""
         SELECT * FROM Clients
-        WHERE name LIKE '%$value%' OR phone LIKE '%$value%' OR email LIKE '%$value%' OR address LIKE '%$value%';
+        WHERE name LIKE '%$value%' OR phone LIKE '%$value%' OR email LIKE '%$value%' OR address LIKE '%$value%' ANd address LIKE' %mahalla%';
           """);
                     if (result.isNotEmpty) {
                       clients = [];
@@ -84,9 +87,24 @@ class _ClientsPageState extends State<ClientsPage> {
                     } else {
                       clients = [];
                     }
-                    setState(() {});
-                    // print('values:${result}');
-                 
+                   
+                    }else{
+                      var result = await sqlHelper.db!.rawQuery("""
+        SELECT * FROM Clients
+        WHERE name LIKE '%$value%' OR phone LIKE '%$value%' OR email LIKE '%$value%' OR address LIKE '%$value%';
+          """);
+                      if (result.isNotEmpty) {
+                        clients = [];
+                        for (var item in result) {
+                          clients!.add(ClientData.fromJson(item));
+                        }
+                      } else {
+                        clients = [];
+                      }
+                    }
+                  
+                  setState(() {});
+                    // print('values:${result}')
                   },
                   decoration: const InputDecoration(
                       enabledBorder: OutlineInputBorder(
@@ -160,10 +178,40 @@ class _ClientsPageState extends State<ClientsPage> {
               height: 10,
             ),
             if (_showWidget)
-              BottomSheetModal(
-                text: 'j',
-               
-              ),
+               Row(
+                  // mainAxisSize: MainAxisSize.min,
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Container(
+                        width: 370,
+                        height: 100,
+                        decoration: BoxDecoration(
+                          color: Color.fromARGB(255, 228, 227, 227),
+                          borderRadius: BorderRadius.circular(1.0),
+                        ),
+                        child: Column(
+                          mainAxisAlignment: MainAxisAlignment.spaceAround,
+                          children: [
+                            // sort button
+                            ElevatedButton(
+                                style: ElevatedButton.styleFrom(
+                                    minimumSize: Size(30, 25),
+                                    backgroundColor: placeFilterPressed
+                                        ? Colors.blue
+                                        : Colors.white),
+                                onPressed: () async {
+                                  setState(() {
+                                    placeFilterPressed = !placeFilterPressed;
+                                  });
+                                },
+                                child: Text('lives in Mahalla',style: TextStyle(color:   placeFilterPressed?Colors.white:Colors.blue),)),
+                            SizedBox(
+                              width: 5,
+                            ),
+                           
+                          ],
+                        )),
+                  ]),
             const SizedBox(
               height: 10,
             ),

@@ -70,23 +70,79 @@ class _AllSalesState extends State<AllSales> {
                 child: TextField(
                   onChanged: (value) async {
                     var sqlHelper = GetIt.I.get<SqlHelper>();
-                    var result = await sqlHelper.db!.rawQuery("""
+                    if (priceFilterPressed) {
+                      var result = await sqlHelper.db!.rawQuery("""
     select O.* ,C.name as clientName,C.phone as clientPhone,C.address as clientAddress 
       from orders O
       inner join clients C
       where O.clientId = C.id AND
-       (label LIKE '%$value%' OR totalPrice LIKE '%$value%' OR clientName LIKE '%$value%') ;
+       (label LIKE '%$value%' OR totalPrice LIKE '%$value%' OR clientName LIKE '%$value%') 
+       AND totalPrice>1000 ;
           """);
-                    if (result.isNotEmpty) {
-                      orders = [];
-                      for (var item in result) {
-                        orders!.add(Order.fromJson(item));
+                      if (result.isNotEmpty) {
+                        orders = [];
+                        for (var item in result) {
+                          orders!.add(Order.fromJson(item));
+                        }
+                      } else {
+                        orders = [];
                       }
-                    } else {
-                      orders = [];
+                 
                     }
-                    setState(() {});
-                    // print('values:${result}')
+                   else if (discountFilterPressed) {
+                      var result = await sqlHelper.db!.rawQuery("""
+    select O.* ,C.name as clientName,C.phone as clientPhone,C.address as clientAddress 
+      from orders O
+      inner join clients C
+      where O.clientId = C.id AND discount>15 AND
+       (label LIKE '%$value%' OR totalPrice LIKE '%$value%' OR clientName LIKE '%$value%')  ;
+          """);
+                      if (result.isNotEmpty) {
+                        orders = [];
+                        for (var item in result) {
+                          orders!.add(Order.fromJson(item));
+                        }
+                      } else {
+                        orders = [];
+                      }
+                  
+                    } else if (priceFilterPressed & discountFilterPressed) {
+                      var result = await sqlHelper.db!.rawQuery("""
+    select O.* ,C.name as clientName,C.phone as clientPhone,C.address as clientAddress 
+      from orders O
+      inner join clients C
+      where O.clientId = C.id AND
+       (label LIKE '%$value%' OR totalPrice LIKE '%$value%' OR clientName LIKE '%$value%') AND totalPrice>1000 AND discount>15;
+          """);
+                      if (result.isNotEmpty) {
+                        orders = [];
+                        for (var item in result) {
+                          orders!.add(Order.fromJson(item));
+                        }
+                      } else {
+                        orders = [];
+                      }
+                     
+                    }else{
+                      var result = await sqlHelper.db!.rawQuery("""
+    select O.* ,C.name as clientName,C.phone as clientPhone,C.address as clientAddress 
+      from orders O
+      inner join clients C
+      where O.clientId = C.id AND
+       (label LIKE '%$value%' OR totalPrice LIKE '%$value%' OR clientName LIKE '%$value%') AND totalPrice>1000 AND discount>15;
+          """);
+                      if (result.isNotEmpty) {
+                        orders = [];
+                        for (var item in result) {
+                          orders!.add(Order.fromJson(item));
+                        }
+                      } else {
+                        orders = [];
+                      }
+                    
+
+                    }
+                      setState(() {});
                   },
                   decoration: const InputDecoration(
                       enabledBorder: OutlineInputBorder(
@@ -169,56 +225,42 @@ class _AllSalesState extends State<AllSales> {
                           color: Color.fromARGB(255, 228, 227, 227),
                           borderRadius: BorderRadius.circular(1.0),
                         ),
-                        child:Column(
+                        child: Column(
                           mainAxisAlignment: MainAxisAlignment.spaceAround,
                           children: [
                             // sort button
                             ElevatedButton(
-                              onPressed: () async {
-                                setState(() {
-                                 priceFilterPressed:
-                                  !priceFilterPressed;
-                                });
-                                var sqlHelper = GetIt.I.get<SqlHelper>();
-                                var result = await sqlHelper.db!.rawQuery("""
-    select O.* ,C.name as clientName,C.phone as clientPhone,C.address as clientAddress 
-      from orders O
-      inner join clients C
-      where O.clientId = C.id AND totalPrice>1000  ;
-          """);
-                                if (result.isNotEmpty) {
-                                  orders = [];
-                                  for (var item in result) {
-                                    orders!.add(Order.fromJson(item));
-                                  }
-                                } else {
-                                  orders = [];
-                                }
-                                setState(() {});
-                                // print('values:${result}')
-                              },
-                              child: Text('Total price more than 1000  LE'),
-                              style: ElevatedButton.styleFrom(
-                                  minimumSize: Size(30, 25),
-                          //         backgroundColor:
-                          //  priceFilterPressed ? Colors.blue:Colors.white 
-                               ),
-                            ),
+                                style: ElevatedButton.styleFrom(
+                                    minimumSize: Size(30, 25),
+                                    backgroundColor: priceFilterPressed
+                                        ? Colors.blue
+                                        : Colors.white),
+                                onPressed: () async {
+                                  setState(() {
+                                    priceFilterPressed = !priceFilterPressed;
+                                  });
+                                },
+                                child: Text('Total price more than 1000  LE',style: TextStyle(color:   priceFilterPressed?Colors.white:Colors.blue),)),
                             SizedBox(
                               width: 5,
                             ),
                             ElevatedButton(
                               style: ElevatedButton.styleFrom(
                                 minimumSize: Size(30, 25),
+                                backgroundColor: discountFilterPressed
+                                        ? Colors.blue
+                                        : Colors.white
                               ),
                               onPressed: () {
-                                // getSortedData('name', 'DESC');
+                                 setState(() {
+                                discountFilterPressed = !discountFilterPressed;
+                                });
                               },
                               child: Row(
                                 mainAxisSize: MainAxisSize.min,
                                 children: [
-                                 
-                                  Text('Dicount more than 15%'),
+                                  Text('Dicount more than 15%',style: TextStyle(color:   discountFilterPressed? Colors.white
+                                            : Colors.blue),),
                                 ],
                               ),
                             ),

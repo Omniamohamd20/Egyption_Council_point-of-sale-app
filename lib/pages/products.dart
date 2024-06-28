@@ -18,6 +18,8 @@ class _ProductsPageState extends State<ProductsPage> {
   List<Product>? products;
   bool _showWidget = false;
   int pressedCount = 0;
+  bool stockFilterPressed = false;
+  bool availableFilterPressed = false;
   @override
   void initState() {
     getProducts();
@@ -27,11 +29,12 @@ class _ProductsPageState extends State<ProductsPage> {
   void getProducts() async {
     try {
       var sqlHelper = GetIt.I.get<SqlHelper>();
+      if (stockFilterPressed){}
       var data = await sqlHelper.db!.rawQuery("""
       select P.* ,C.name as categoryName,C.description as categoryDesc 
       from products P
       inner join categories C
-      where P.categoryId = C.id
+      where P.categoryId = C.id And stock >10
       """);
 
       if (data.isNotEmpty) {
@@ -69,8 +72,7 @@ class _ProductsPageState extends State<ProductsPage> {
         padding: const EdgeInsets.all(20.0),
         child: Column(
           children: [
-         
-                   // search,filter,sort row
+            // search,filter,sort row
             Row(mainAxisAlignment: MainAxisAlignment.start, children: [
               Container(
                 width: 295,
@@ -164,9 +166,64 @@ class _ProductsPageState extends State<ProductsPage> {
               height: 10,
             ),
             if (_showWidget)
-              BottomSheetModal(
-                text: 'j',
-              ),
+              Row(
+                  // mainAxisSize: MainAxisSize.min,
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Container(
+                        width: 370,
+                        height: 100,
+                        decoration: BoxDecoration(
+                          color: Color.fromARGB(255, 228, 227, 227),
+                          borderRadius: BorderRadius.circular(1.0),
+                        ),
+                        child: Column(
+                          mainAxisAlignment: MainAxisAlignment.spaceAround,
+                          children: [
+                            // sort button
+                            ElevatedButton(
+                                style: ElevatedButton.styleFrom(
+                                    minimumSize: Size(30, 25),
+                                    backgroundColor: stockFilterPressed
+                                        ? Colors.blue
+                                        : Colors.white),
+                                onPressed: () async {
+                                  setState(() {
+                                    stockFilterPressed = !stockFilterPressed;
+                                  });
+                                },
+                                child: Text(
+                                  'stock more than 10',
+                                  style: TextStyle(
+                                      color: stockFilterPressed
+                                          ? Colors.white
+                                          : Colors.blue),
+                                )),
+                            ElevatedButton(
+                                style: ElevatedButton.styleFrom(
+                                    minimumSize: Size(30, 25),
+                                    backgroundColor:  availableFilterPressed
+                                        ? Colors.blue
+                                        : Colors.white),
+                                onPressed: () async {
+                                  setState(() {
+                                    availableFilterPressed =
+                                        !availableFilterPressed;
+                                  });
+                                },
+                                child: Text(
+                                  'Available',
+                                  style: TextStyle(
+                                      color: availableFilterPressed
+                                          ? Colors.white
+                                          : Colors.blue),
+                                )),
+                            SizedBox(
+                              width: 5,
+                            ),
+                          ],
+                        )),
+                  ]),
             const SizedBox(
               height: 10,
             ),
@@ -208,6 +265,7 @@ class _ProductsPageState extends State<ProductsPage> {
       ),
     );
   }
+
   Future<void> getSortedData(String columnName, String sortType) async {
     var sqlHelper = GetIt.I.get<SqlHelper>();
     var data;
@@ -224,10 +282,10 @@ SELECT * FROM Products ORDER BY $columnName DESC;
     if (data.isNotEmpty) {
       products = [];
       for (var item in data) {
-          products!.add(Product.fromJson(item));
+        products!.add(Product.fromJson(item));
       }
     } else {
-         products = [];
+      products = [];
     }
     setState(() {});
   }

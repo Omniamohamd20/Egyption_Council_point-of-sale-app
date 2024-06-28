@@ -160,9 +160,58 @@ class _CategoriesPageState extends State<CategoriesPage> {
               height: 10,
             ),
             if (_showWidget)
-              BottomSheetModal(
-                text: 'j',
-              ),
+                     Row(
+                  // mainAxisSize: MainAxisSize.min,
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Container(
+                        width: 370,
+                        height: 100,
+                        decoration: BoxDecoration(
+                          color: Color.fromARGB(255, 228, 227, 227),
+                          borderRadius: BorderRadius.circular(1.0),
+                        ),
+                        child: Column(
+                          mainAxisAlignment: MainAxisAlignment.spaceAround,
+                          children: [
+                            // sort button
+                            ElevatedButton(
+                                style: ElevatedButton.styleFrom(
+                                    minimumSize: Size(30, 25),
+                                    // backgroundColor: Colors.white
+                                    ),
+                                onPressed: () async {
+                                  setState(() {
+                                  
+                                  });
+                                },
+                                child: Text(
+                                  'filter1',
+                                 ),),
+                            SizedBox(
+                              width: 5,
+                            ),
+                            ElevatedButton(
+                              style: ElevatedButton.styleFrom(
+                                  minimumSize: Size(30, 25),
+                              ),
+                              onPressed: () {
+                                setState(() {
+                                 
+                                });
+                              },
+                              child: Row(
+                                mainAxisSize: MainAxisSize.min,
+                                children: [
+                                  Text(
+                                    'filter 2',
+                                  ),
+                                ],
+                              ),
+                            ),
+                          ],
+                        )),
+                  ]),
             const SizedBox(
               height: 10,
             ),
