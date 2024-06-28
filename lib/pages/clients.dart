@@ -1,10 +1,8 @@
-import 'package:filter_list/filter_list.dart';
 import 'package:data_table_2/data_table_2.dart';
 import 'package:easy_pos/helpers/sql_helper.dart';
 import 'package:easy_pos/models/client.dart';
 import 'package:easy_pos/pages/clients_ops.dart';
 import 'package:easy_pos/widgets/app_table.dart';
-import 'package:easy_pos/widgets/bottom_sheet.dart';
 import 'package:flutter/material.dart';
 import 'package:get_it/get_it.dart';
 

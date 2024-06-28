@@ -3,7 +3,7 @@ import 'package:easy_pos/helpers/sql_helper.dart';
 import 'package:easy_pos/models/product.dart';
 import 'package:easy_pos/pages/products_ops.dart';
 import 'package:easy_pos/widgets/app_table.dart';
-import 'package:easy_pos/widgets/bottom_sheet.dart';
+
 import 'package:flutter/material.dart';
 import 'package:get_it/get_it.dart';
 
