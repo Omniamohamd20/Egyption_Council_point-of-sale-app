@@ -22,8 +22,9 @@ class _ClientsPageState extends State<ClientsPage> {
 
   @override
   void initState() {
+     super.initState();
     getClients();
-    super.initState();
+   
   }
 
   void getClients() async {
